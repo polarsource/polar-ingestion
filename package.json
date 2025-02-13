@@ -55,6 +55,10 @@
 	"keywords": [],
 	"author": "",
 	"license": "Apache-2.0",
+	"packageManager": "pnpm@9.0.0",
+	"engines": {
+	  "node": ">=18"
+	},
 	"dependencies": {
 		"@polar-sh/sdk": "^0.24.0"
 	},
