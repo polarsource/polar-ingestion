@@ -1,4 +1,4 @@
-# polar-ingestion
+# @polar-sh/ingestion
 
 This ingestion framework offers a robust SDK to work with Polar's event ingestion API.
 
