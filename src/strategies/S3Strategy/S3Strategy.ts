@@ -1,5 +1,4 @@
 import type { S3Client } from "@aws-sdk/client-s3";
-import type { Polar } from "@polar-sh/sdk";
 import type { IngestionContext } from "../../ingestion";
 import {
 	type IngestionExecutionHandler,

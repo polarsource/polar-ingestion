@@ -3,8 +3,6 @@ import type {
 	LanguageModelV1CallOptions,
 	LanguageModelV1StreamPart,
 } from "@ai-sdk/provider";
-
-import type { Polar } from "@polar-sh/sdk";
 import { type LanguageModelV1Middleware, wrapLanguageModel } from "ai";
 import type { IngestionContext } from "../../ingestion";
 import {
