@@ -10,7 +10,9 @@ Want to report events regarding Large Language Model usage, S3 file uploads or s
 
 Wrap any LLM model from the `@ai-sdk/*` library, to automatically fire prompt- & completion tokens used by every model call.
 
-```pnpm add @polar-sh/ingestion ai @ai-sdk/openai```
+```
+pnpm add @polar-sh/ingestion ai @ai-sdk/openai
+```
 
 ```typescript
 import { Ingestion } from '@polar-sh/ingestion';
@@ -46,7 +48,9 @@ export async function POST(req: Request) {
 
 Wrap the official AWS S3 Client with our S3 Ingestion Strategy to automatically ingest bytes uploaded. 
 
-```pnpm add @polar-sh/ingestion @aws-sdk/client-s3```
+```
+pnpm add @polar-sh/ingestion @aws-sdk/client-s3
+```
 
 ```typescript
 import { Ingestion } from '@polar-sh/ingestion';
@@ -100,7 +104,9 @@ export async function POST(request: Request) {
 
 Wrap any Readable or Writable stream of choice to automatically ingest the bytes consumed.
 
-```pnpm add @polar-sh/ingestion```
+```
+pnpm add @polar-sh/ingestion
+```
 
 ```typescript
 import { Ingestion } from '@polar-sh/ingestion';
