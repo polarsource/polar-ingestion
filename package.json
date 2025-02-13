@@ -1,6 +1,6 @@
 {
 	"name": "@polar-sh/ingestion",
-	"version": "0.0.7",
+	"version": "0.1.0",
 	"description": "Core package for Polar ingestion",
 	"main": "./dist/index.cjs",
 	"module": "./dist/index.js",
@@ -17,34 +17,34 @@
 				"require": "./dist/index.cjs"
 			}
 		},
-		"./strategies/StreamStrategy": {
+		"./strategies/Stream": {
 			"import": {
-				"types": "./dist/strategies/StreamStrategy/StreamStrategy.d.ts",
-				"import": "./dist/strategies/StreamStrategy/StreamStrategy.js"
+				"types": "./dist/strategies/Stream/index.d.ts",
+				"import": "./dist/strategies/Stream/index.js"
 			},
 			"require": {
-				"types": "./dist/strategies/StreamStrategy/StreamStrategy.d.cts",
-				"require": "./dist/strategies/StreamStrategy/StreamStrategy.cjs"
+				"types": "./dist/strategies/Stream/index.d.cts",
+				"require": "./dist/strategies/Stream/index.cjs"
 			}
 		},
-		"./strategies/LLMStrategy": {
+		"./strategies/LLM": {
 			"import": {
-				"types": "./dist/strategies/LLMStrategy/LLMStrategy.d.ts",
-				"import": "./dist/strategies/LLMStrategy/LLMStrategy.js"
+				"types": "./dist/strategies/LLM/index.d.ts",
+				"import": "./dist/strategies/LLM/index.js"
 			},
 			"require": {
-				"types": "./dist/strategies/LLMStrategy/LLMStrategy.d.cts",
-				"require": "./dist/strategies/LLMStrategy/LLMStrategy.cjs"
+				"types": "./dist/strategies/LLM/index.d.cts",
+				"require": "./dist/strategies/LLM/index.cjs"
 			}
 		},
-		"./strategies/S3Strategy": {
+		"./strategies/S3": {
 			"import": {
-				"types": "./dist/strategies/S3Strategy/S3Strategy.d.ts",
-				"import": "./dist/strategies/S3Strategy/S3Strategy.js"
+				"types": "./dist/strategies/S3/index.d.ts",
+				"import": "./dist/strategies/S3/index.js"
 			},
 			"require": {
-				"types": "./dist/strategies/S3Strategy/S3Strategy.d.cts",
-				"require": "./dist/strategies/S3Strategy/S3Strategy.cjs"
+				"types": "./dist/strategies/S3/index.d.cts",
+				"require": "./dist/strategies/S3/index.cjs"
 			}
 		}
 	},

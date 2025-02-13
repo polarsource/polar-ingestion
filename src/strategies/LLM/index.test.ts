@@ -17,7 +17,6 @@ vi.mock("@polar-sh/sdk", async (importOriginal) => {
 	};
 });
 
-import { Polar } from "@polar-sh/sdk";
 import { Ingestion } from "../../ingestion";
 
 const mockLLMClient = {

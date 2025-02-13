@@ -50,7 +50,7 @@ Wrap the official AWS S3 Client with our S3 Ingestion Strategy to automatically 
 
 ```typescript
 import { Ingestion } from '@polar-sh/ingestion';
-import { S3Strategy } from "@polar-sh/ingestion/strategies/S3Strategy";
+import { S3Strategy } from "@polar-sh/ingestion/strategies/S3";
 import { PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
 
 const s3Client = new S3Client({
