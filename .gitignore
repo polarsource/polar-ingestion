@@ -38,6 +38,3 @@ coverage/
 # Temporary files
 tmp/
 temp/
-
-# Ignore pnpm lock file
-pnpm-lock.yaml
