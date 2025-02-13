@@ -1,4 +1,4 @@
-import { PolarIngestion, type IngestionContext } from "./ingestion";
+import { type IngestionContext, PolarIngestion } from "./ingestion";
 
 export type IngestionExecutionHandler<TUsageContext extends IngestionContext> =
 	(ctx: TUsageContext, customerId: string) => Promise<void>;

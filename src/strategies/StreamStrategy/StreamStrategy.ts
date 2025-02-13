@@ -1,59 +1,59 @@
 import type { Stream } from "node:stream";
 import type { IngestionContext } from "../../ingestion";
 import {
-  type IngestionExecutionHandler,
-  IngestionStrategy,
+	type IngestionExecutionHandler,
+	IngestionStrategy,
 } from "../../strategy";
 
 type StreamStrategyContext = IngestionContext & {
-  bytes: number;
+	bytes: number;
 };
 
 export class StreamStrategy<TStream extends Stream> extends IngestionStrategy<
-  StreamStrategyContext,
-  TStream
+	StreamStrategyContext,
+	TStream
 > {
-  private stream: Stream;
+	private stream: Stream;
 
-  constructor(stream: Stream) {
-    super();
+	constructor(stream: Stream) {
+		super();
 
-    this.stream = stream;
-  }
+		this.stream = stream;
+	}
 
-  private wrapStream({
-    stream,
-    execute,
-    customerId,
-  }: {
-    stream: TStream;
-    execute: IngestionExecutionHandler<StreamStrategyContext>;
-    customerId: string;
-  }) {
-    let bytes = 0;
+	private wrapStream({
+		stream,
+		execute,
+		customerId,
+	}: {
+		stream: TStream;
+		execute: IngestionExecutionHandler<StreamStrategyContext>;
+		customerId: string;
+	}) {
+		let bytes = 0;
 
-    stream.on("data", (chunk) => {
-      bytes += chunk.length;
-    });
+		stream.on("data", (chunk) => {
+			bytes += chunk.length;
+		});
 
-    stream.on("end", () => {
-      const payload: StreamStrategyContext = {
-        bytes,
-      };
+		stream.on("end", () => {
+			const payload: StreamStrategyContext = {
+				bytes,
+			};
 
-      execute(payload, customerId);
-    });
+			execute(payload, customerId);
+		});
 
-    return stream;
-  }
+		return stream;
+	}
 
-  public client(customerId: string): TStream {
-    const execute = this.createExecutionHandler();
+	public client(customerId: string): TStream {
+		const execute = this.createExecutionHandler();
 
-    return this.wrapStream({
-      stream: this.stream as TStream,
-      execute,
-      customerId,
-    });
-  }
+		return this.wrapStream({
+			stream: this.stream as TStream,
+			execute,
+			customerId,
+		});
+	}
 }

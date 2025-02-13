@@ -1,6 +1,6 @@
 {
 	"name": "@polar-sh/ingestion",
-	"version": "0.0.6",
+	"version": "0.0.7",
 	"description": "Core package for Polar ingestion",
 	"main": "./dist/index.cjs",
 	"module": "./dist/index.js",
@@ -50,7 +50,8 @@
 	},
 	"scripts": {
 		"build": "tsup",
-		"test": "vitest"
+		"test": "vitest",
+		"check": "biome check ./src --fix"
 	},
 	"keywords": [],
 	"author": "",
