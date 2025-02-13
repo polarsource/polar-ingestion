@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import { LLMStrategy } from "./LLMStrategy";
+import { LLMStrategy } from ".";
 
 const mockEventsIngest = vi.fn();
 
