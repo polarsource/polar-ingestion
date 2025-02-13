@@ -1,21 +1,21 @@
 import { PolarIngestion, type IngestionContext } from "./ingestion";
 
 export type IngestionExecutionHandler<TUsageContext extends IngestionContext> =
-	(ctx: TUsageContext) => Promise<void>;
+	(ctx: TUsageContext, customerId: string) => Promise<void>;
 
 export abstract class IngestionStrategy<
 	TUsageContext extends IngestionContext,
 	TStrategyClient,
 > extends PolarIngestion<TUsageContext> {
 	public createExecutionHandler(): IngestionExecutionHandler<TUsageContext> {
-		return async (context: TUsageContext) => {
-			await this.execute(context);
+		return async (context: TUsageContext, customerId: string) => {
+			await this.execute(context, customerId);
 		};
 	}
 
 	public ingest(
 		eventName: string,
-		metadataResolver: (
+		metadataResolver?: (
 			ctx: TUsageContext,
 		) => Record<string, number | string | boolean>,
 	) {

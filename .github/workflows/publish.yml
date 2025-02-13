@@ -1,12 +1,9 @@
 name: Publish Package to npmjs
 
 on:
-  push:
-    branches:
-      - main
-
-concurrency: ${{ github.workflow }}-${{ github.ref }}
-
+  release:
+    types: [published]
+    
 jobs:
   build:
     runs-on: ubuntu-22.04
@@ -14,27 +11,21 @@ jobs:
       matrix:
         node-version: [20]
     permissions:
-      contents: 'write'
-      pull-requests: 'write'
+      contents: read
+      id-token: write
     steps:
     - uses: actions/checkout@v4
-    
     - name: Install pnpm
       uses: pnpm/action-setup@v4
-    
+      with:
+        version: 9
     - name: Use Node.js ${{ matrix.node-version }}
       uses: actions/setup-node@v4
       with:
         node-version: ${{ matrix.node-version }}
         cache: 'pnpm'
-    
     - run: pnpm install --frozen-lockfile
-
-    - name: Publish to NPM
-      id: changesets
-      uses: changesets/action@v1
-      with:
-        publish: pnpm publish --access public
+    - run: pnpm run build
+    - run: pnpm publish --access public --no-git-checks
       env:
         NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

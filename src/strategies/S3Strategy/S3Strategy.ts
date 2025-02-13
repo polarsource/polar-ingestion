@@ -16,8 +16,8 @@ type S3StrategyContext = IngestionContext & {
 export class S3Strategy extends IngestionStrategy<S3StrategyContext, S3Client> {
   private s3Client: S3Client;
 
-  constructor(s3Client: S3Client, polar: Polar) {
-    super(polar);
+  constructor(s3Client: S3Client) {
+    super();
 
     this.s3Client = s3Client;
   }
@@ -43,7 +43,6 @@ export class S3Strategy extends IngestionStrategy<S3StrategyContext, S3Client> {
                   // @ts-expect-error
                   args.request.headers["content-length"] ?? "0",
                 ),
-                customerId,
               };
 
               if ("Bucket" in args.input) {
@@ -58,7 +57,7 @@ export class S3Strategy extends IngestionStrategy<S3StrategyContext, S3Client> {
                 payload.contentType = args.input.ContentType;
               }
 
-              execute(payload);
+              execute(payload, customerId);
             }
 
             return result;

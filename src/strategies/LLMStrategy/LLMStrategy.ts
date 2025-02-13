@@ -23,8 +23,8 @@ export class LLMStrategy extends IngestionStrategy<
 > {
   private model: LanguageModelV1;
 
-  constructor(model: LanguageModelV1, polar: Polar) {
-    super(polar);
+  constructor(model: LanguageModelV1) {
+    super();
 
     this.model = model;
   }
@@ -40,10 +40,7 @@ export class LLMStrategy extends IngestionStrategy<
     }): Promise<Awaited<ReturnType<LanguageModelV1["doGenerate"]>>> => {
       const result = await options.doGenerate();
 
-      await execute({
-        ...result.usage,
-        customerId,
-      });
+      await execute(result.usage, customerId);
 
       return result;
     };
@@ -63,10 +60,7 @@ export class LLMStrategy extends IngestionStrategy<
       >({
         transform: async (chunk, controller) => {
           if (chunk.type === "finish") {
-            await execute({
-              ...chunk.usage,
-              customerId,
-            });
+            await execute(chunk.usage, customerId);
           }
 
           controller.enqueue(chunk);

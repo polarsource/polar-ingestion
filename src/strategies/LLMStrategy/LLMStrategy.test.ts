@@ -18,6 +18,7 @@ vi.mock("@polar-sh/sdk", async (importOriginal) => {
 });
 
 import { Polar } from "@polar-sh/sdk";
+import { Ingestion } from "../../ingestion";
 
 const mockLLMClient = {
   specificationVersion: "v1",
@@ -39,12 +40,8 @@ describe("LLMStrategy", () => {
   it("should call the meter handler with the correct context", async () => {
     const input = { prompt: "Hello, world!" };
 
-    const llm = new LLMStrategy(mockLLMClient, new Polar()).ingest(
+    const llm = Ingestion().strategy(new LLMStrategy(mockLLMClient)).ingest(
       "prompt-tokens",
-      ({ promptTokens, completionTokens }) => ({
-        promptTokens,
-        completionTokens,
-      }),
     );
 
     const spy = vi.spyOn(llm, "execute");
@@ -63,7 +60,6 @@ describe("LLMStrategy", () => {
     expect(spy).toHaveBeenCalledWith({
       promptTokens: 1,
       completionTokens: 1,
-      customerId,
-    });
+    }, customerId);
   });
 });

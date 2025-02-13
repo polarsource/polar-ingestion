@@ -1,23 +1,18 @@
-import type { Polar } from "@polar-sh/sdk";
+import { Polar, SDKOptions } from "@polar-sh/sdk";
 import type { IngestionStrategy } from "./strategy";
 
 export type IngestionContext<
-	TContext extends Record<string, unknown> = Record<string, unknown>,
-> = TContext & {
-	customerId: string;
-};
+	TContext extends Record<string, string | number | boolean> = Record<string, string | number | boolean>,
+> = TContext
 
 type Transformer<TContext extends IngestionContext> = (
 	ctx: TContext,
+	customerId: string,
 ) => Promise<void>;
 
 export class PolarIngestion<TContext extends IngestionContext> {
 	public polarClient?: Polar;
 	private transformers: Transformer<TContext>[] = [];
-
-	constructor(polar: Polar) {
-		this.polarClient = polar;
-	}
 
 	private pipe(transformer: Transformer<TContext>) {
 		this.transformers.push(transformer);
@@ -25,15 +20,15 @@ export class PolarIngestion<TContext extends IngestionContext> {
 		return this;
 	}
 
-	public async execute(ctx: TContext) {
-		await Promise.all(this.transformers.map((transformer) => transformer(ctx)));
+	public async execute(ctx: TContext, customerId: string) {
+		await Promise.all(this.transformers.map((transformer) => transformer(ctx, customerId)));
 	}
 
 	public schedule(
 		meter: string,
-		transformer: (ctx: TContext) => Record<string, number | string | boolean>,
+		metadataResolver?: (ctx: TContext) => Record<string, number | string | boolean>,
 	) {
-		return this.pipe(async (ctx) => {
+		return this.pipe(async (ctx, customerId) => {
 			if (!this.polarClient) {
 				throw new Error("Polar client not initialized");
 			}
@@ -41,9 +36,9 @@ export class PolarIngestion<TContext extends IngestionContext> {
 			await this.polarClient.events.ingest({
 				events: [
 					{
-						customerId: ctx.customerId,
+						customerId,
 						name: meter,
-						metadata: transformer(ctx),
+						metadata: metadataResolver ? metadataResolver(ctx) : ctx,
 					},
 				],
 			});
@@ -51,12 +46,12 @@ export class PolarIngestion<TContext extends IngestionContext> {
 	}
 }
 
-export function Ingestion(polar: Polar) {
+export function Ingestion(polarConfig?: SDKOptions) {
 	return {
 		strategy: <TContext extends IngestionContext, TStrategyClient>(
 			strategy: IngestionStrategy<TContext, TStrategyClient>,
 		) => {
-			strategy.polarClient = polar;
+			strategy.polarClient = new Polar(polarConfig);
 			return strategy;
 		},
 	};

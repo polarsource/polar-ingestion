@@ -10,19 +10,16 @@ Want to report events regarding Large Language Model usage, S3 file uploads or s
 
 Wrap any LLM model from the `@ai-sdk/*` library, to automatically fire prompt- & completion tokens used by every model call.
 
-`pnpm add @polar-sh/ingestion @polar-sh/sdk ai @ai-sdk/openai`
+`pnpm add @polar-sh/ingestion ai @ai-sdk/openai`
 
 ```typescript
 import { Ingestion } from '@polar-sh/ingestion';
 import { LLMStrategy } from '@polar-sh/ingestion/strategies/LLM';
-import { Polar } from '@polar-sh/sdk';
 import { generateText } from 'ai';
 import { openai } from '@ai-sdk/openai';
 
-const polar = new Polar({ accessToken: process.env.POLAR_ACCESS_TOKEN });
-
 // Setup the LLM Ingestion Strategy
-const llmIngestion = Ingestion(polar)
+const llmIngestion = Ingestion({ accessToken: process.env.POLAR_ACCESS_TOKEN })
     .strategy(new LLMStrategy(openai('gpt-4o')))
     .ingest('openai-usage')
 
@@ -49,15 +46,12 @@ export async function POST(req: Request) {
 
 Wrap the official AWS S3 Client with our S3 Ingestion Strategy to automatically ingest bytes uploaded. 
 
-`pnpm add @polar-sh/ingestion @polar-sh/sdk @aws-sdk/client-s3`
+`pnpm add @polar-sh/ingestion @aws-sdk/client-s3`
 
 ```typescript
 import { Ingestion } from '@polar-sh/ingestion';
 import { S3Strategy } from "@polar-sh/ingestion/strategies/S3Strategy";
-import { Polar } from "@polar-sh/sdk";
 import { PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
-
-const polar = new Polar({ accessToken: process.env.POLAR_ACCESS_TOKEN });
 
 const s3Client = new S3Client({
   region: process.env.AWS_REGION,
@@ -69,7 +63,7 @@ const s3Client = new S3Client({
 });
 
 // Setup the S3 Ingestion Strategy
-const s3Ingestion = Ingestion(polar)
+const s3Ingestion = Ingestion({ accessToken: process.env.POLAR_ACCESS_TOKEN })
     .strategy(new S3Strategy(s3Client))
     .ingest('s3-uploads')
 
@@ -106,19 +100,16 @@ export async function POST(request: Request) {
 
 Wrap any Readable or Writable stream of choice to automatically ingest the bytes consumed.
 
-`pnpm add @polar-sh/ingestion @polar-sh/sdk`
+`pnpm add @polar-sh/ingestion`
 
 ```typescript
 import { Ingestion } from '@polar-sh/ingestion';
 import { StreamStrategy } from '@polar-sh/ingestion/strategies/Stream';
-import { Polar } from '@polar-sh/sdk';
-
-const polar = new Polar({ accessToken: process.env.POLAR_ACCESS_TOKEN });
 
 const myReadstream = createReadStream(...);
 
 // Setup the Stream Ingestion Strategy
-const streamIngestion = Ingestion(polar)
+const streamIngestion = Ingestion({ accessToken: process.env.POLAR_ACCESS_TOKEN })
   .strategy(new StreamStrategy(myReadstream))
   .ingest("my-stream");
 

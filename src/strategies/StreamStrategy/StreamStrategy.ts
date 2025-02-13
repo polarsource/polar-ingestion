@@ -1,5 +1,4 @@
-import type { Readable } from "node:stream";
-import type { Polar } from "@polar-sh/sdk";
+import type { Stream } from "node:stream";
 import type { IngestionContext } from "../../ingestion";
 import {
   type IngestionExecutionHandler,
@@ -10,14 +9,15 @@ type StreamStrategyContext = IngestionContext & {
   bytes: number;
 };
 
-export class StreamStrategy extends IngestionStrategy<
+export class StreamStrategy<TStream extends Stream> extends IngestionStrategy<
   StreamStrategyContext,
-  Readable
+  TStream
 > {
-  private stream: Readable;
+  private stream: Stream;
 
-  constructor(stream: Readable, polar: Polar) {
-    super(polar);
+  constructor(stream: Stream) {
+    super();
+
     this.stream = stream;
   }
 
@@ -26,7 +26,7 @@ export class StreamStrategy extends IngestionStrategy<
     execute,
     customerId,
   }: {
-    stream: Readable;
+    stream: TStream;
     execute: IngestionExecutionHandler<StreamStrategyContext>;
     customerId: string;
   }) {
@@ -39,20 +39,19 @@ export class StreamStrategy extends IngestionStrategy<
     stream.on("end", () => {
       const payload: StreamStrategyContext = {
         bytes,
-        customerId,
       };
 
-      execute(payload);
+      execute(payload, customerId);
     });
 
     return stream;
   }
 
-  public client(customerId: string): Readable {
+  public client(customerId: string): TStream {
     const execute = this.createExecutionHandler();
 
     return this.wrapStream({
-      stream: this.stream,
+      stream: this.stream as TStream,
       execute,
       customerId,
     });
