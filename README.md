@@ -2,9 +2,6 @@
 
 This ingestion framework offers a robust SDK to work with Polar's event ingestion API.
 
-> [!WARNING]  
-> This SDK is still under development, and should not be used unless for development reasons. Polar's ingestion feature does still not have a UI.
-
 ## Strategies
 
 Want to report events regarding Large Language Model usage, S3 file uploads or something else? Our Ingestion strategies are customized to make it as seamless as possible to fire ingestion events for complex needs.
