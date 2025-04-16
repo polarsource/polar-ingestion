@@ -15,28 +15,26 @@ pnpm add @polar-sh/ingestion ai @ai-sdk/openai
 ```
 
 ```typescript
-import { Ingestion } from '@polar-sh/ingestion';
-import { LLMStrategy } from '@polar-sh/ingestion/strategies/LLM';
-import { generateText } from 'ai';
-import { openai } from '@ai-sdk/openai';
+import { Ingestion } from "@polar-sh/ingestion";
+import { LLMStrategy } from "@polar-sh/ingestion/strategies/LLM";
+import { generateText } from "ai";
+import { openai } from "@ai-sdk/openai";
 
 // Setup the LLM Ingestion Strategy
 const llmIngestion = Ingestion({ accessToken: process.env.POLAR_ACCESS_TOKEN })
-    .strategy(new LLMStrategy(openai('gpt-4o')))
-    .ingest('openai-usage')
+  .strategy(new LLMStrategy(openai("gpt-4o")))
+  .ingest("openai-usage");
 
 export async function POST(req: Request) {
   const { prompt }: { prompt: string } = await req.json();
 
   // Get the wrapped LLM model with ingestion capabilities
   // Pass Customer Id to properly annotate the ingestion events with a specific customer
-  const model = llmIngestion.client(
-    req.headers.get('X-Polar-Customer-Id')
-  )
+  const model = llmIngestion.client(req.headers.get("X-Polar-Customer-Id"));
 
   const { text } = await generateText({
     model,
-    system: 'You are a helpful assistant.',
+    system: "You are a helpful assistant.",
     prompt,
   });
 
@@ -46,14 +44,14 @@ export async function POST(req: Request) {
 
 ### S3 Strategy
 
-Wrap the official AWS S3 Client with our S3 Ingestion Strategy to automatically ingest bytes uploaded. 
+Wrap the official AWS S3 Client with our S3 Ingestion Strategy to automatically ingest bytes uploaded.
 
 ```
 pnpm add @polar-sh/ingestion @aws-sdk/client-s3
 ```
 
 ```typescript
-import { Ingestion } from '@polar-sh/ingestion';
+import { Ingestion } from "@polar-sh/ingestion";
 import { S3Strategy } from "@polar-sh/ingestion/strategies/S3";
 import { PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
 
@@ -68,12 +66,11 @@ const s3Client = new S3Client({
 
 // Setup the S3 Ingestion Strategy
 const s3Ingestion = Ingestion({ accessToken: process.env.POLAR_ACCESS_TOKEN })
-    .strategy(new S3Strategy(s3Client))
-    .ingest('s3-uploads')
+  .strategy(new S3Strategy(s3Client))
+  .ingest("s3-uploads");
 
 export async function POST(request: Request) {
   try {
-
     // Get the wrapped S3 Client
     // Pass Customer Id to properly annotate the ingestion events with a specific customer
     const s3 = s3Ingestion.client(
@@ -83,12 +80,12 @@ export async function POST(request: Request) {
     await s3.send(
       new PutObjectCommand({
         Bucket: process.env.AWS_BUCKET_NAME,
-        Key: 'a-random-key',
+        Key: "a-random-key",
         Body: JSON.stringify({
-          name: 'John Doe',
+          name: "John Doe",
           age: 30,
         }),
-        ContentType: 'application/json',
+        ContentType: "application/json",
       })
     );
 
@@ -97,7 +94,6 @@ export async function POST(request: Request) {
     return Response.json({ error: error.message });
   }
 }
-
 ```
 
 ### Stream Strategy
@@ -127,7 +123,7 @@ export async function GET(request: Request) {
     const stream = streamIngestion.client(
       request.headers.get("X-Polar-Customer-Id") ?? ""
     );
-    
+
     // Consume stream...
     stream.on('data', () => ...)
 
@@ -138,6 +134,47 @@ export async function GET(request: Request) {
 }
 ```
 
-## Usage Based Billing with Polar Ingestion
+### DeltaTime Strategy
 
-Documentation coming soon.
+Ingest delta time of arbitrary execution. Bring your own now-resolver.
+
+```
+pnpm add @polar-sh/ingestion
+```
+
+```typescript
+import { Ingestion } from "@polar-sh/ingestion";
+import { DeltaTimeStrategy } from "@polar-sh/ingestion/strategies/DeltaTime";
+
+const nowResolver = () => performance.now();
+// const nowResolver = () => hrtime.bigint()
+// const nowResolver = () => Date.now()
+
+// Setup the Delta Time Ingestion Strategy
+const deltaTimeIngestion = Ingestion({
+  accessToken: process.env.POLAR_ACCESS_TOKEN,
+})
+  .strategy(new DeltaTimeStrategy(nowResolver))
+  .ingest("execution-time");
+
+export async function GET(request: Request) {
+  try {
+    // Get the wrapped start clock function
+    // Pass Customer Id to properly annotate the ingestion events with a specific customer
+    const start = deltaTimeIngestion.client(
+      request.headers.get("X-Polar-Customer-Id") ?? ""
+    );
+
+    const stop = start();
+
+    await sleep(1000);
+
+    // { deltaTime: xxx } is automatically ingested to Polar
+    const delta = stop();
+
+    return Response.json({ delta });
+  } catch (error) {
+    return Response.json({ error: error.message });
+  }
+}
+```
