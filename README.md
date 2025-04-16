@@ -44,6 +44,19 @@ export async function POST(req: Request) {
 }
 ```
 
+#### Ingestion Payload
+
+```json
+{
+  "customerId": "123",
+  "name": "openai-usage",
+  "metadata": {
+    "promptTokens": 100,
+    "completionTokens": 200
+  }
+}
+```
+
 ### S3 Strategy
 
 Wrap the official AWS S3 Client with our S3 Ingestion Strategy to automatically ingest bytes uploaded.
@@ -98,6 +111,21 @@ export async function POST(request: Request) {
 }
 ```
 
+#### Ingestion Payload
+
+```json
+{
+  "customerId": "123",
+  "name": "s3-uploads",
+  "metadata": {
+    "bytes": 100,
+    "bucket": "my-bucket",
+    "key": "my-key",
+    "contentType": "application/text"
+  }
+}
+```
+
 ### Stream Strategy
 
 Wrap any Readable or Writable stream of choice to automatically ingest the bytes consumed.
@@ -132,6 +160,18 @@ export async function GET(request: Request) {
     return Response.json({});
   } catch (error) {
     return Response.json({ error: error.message });
+  }
+}
+```
+
+#### Ingestion Payload
+
+```json
+{
+  "customerId": "123",
+  "name": "my-stream",
+  "metadata": {
+    "bytes": 100
   }
 }
 ```
@@ -177,6 +217,18 @@ export async function GET(request: Request) {
     return Response.json({ delta });
   } catch (error) {
     return Response.json({ error: error.message });
+  }
+}
+```
+
+#### Ingestion Payload
+
+```json
+{
+  "customerId": "123",
+  "name": "execution-time",
+  "metadata": {
+    "deltaTime": 1000
   }
 }
 ```
