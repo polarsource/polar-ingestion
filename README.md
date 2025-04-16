@@ -2,6 +2,66 @@
 
 This ingestion framework offers a robust SDK to work with Polar's event ingestion API.
 
+## Basic Ingestion
+
+To do basic ingestion, you can use the Ingestion function directly.
+
+```typescript
+import { Ingestion } from "@polar-sh/ingestion";
+
+await Ingestion({
+  accessToken: process.env.POLAR_ACCESS_TOKEN,
+}).ingest([
+  // Ingest using Polar Customer ID
+  {
+    name: "<value>",
+    customerId: "<value>",
+    metadata: {
+      myProp: "value",
+    },
+  },
+  // Ingest using External Customer ID from your Database
+  {
+    name: "<value>",
+    externalCustomerId: "<id>",
+    metadata: {
+      myProp: "value",
+    },
+  },
+]);
+```
+
+Or you can use the Polar SDK's Event API.
+
+```typescript
+import { Polar } from "@polar-sh/sdk";
+
+const polar = new Polar({
+  accessToken: process.env["POLAR_ACCESS_TOKEN"] ?? "",
+});
+
+await polar.events.ingest({
+  events: [
+    // Ingest using Polar Customer ID
+    {
+      name: "<value>",
+      customerId: "<value>",
+      metadata: {
+        myProp: "value",
+      },
+    },
+    // Ingest using External Customer ID from your Database
+    {
+      name: "<value>",
+      externalCustomerId: "<id>",
+      metadata: {
+        myProp: "value",
+      },
+    },
+  ],
+});
+```
+
 ## Strategies
 
 Want to report events regarding Large Language Model usage, S3 file uploads or something else? Our Ingestion strategies are customized to make it as seamless as possible to fire ingestion events for complex needs.

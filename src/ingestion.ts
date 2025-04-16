@@ -1,4 +1,5 @@
 import { Polar, type SDKOptions } from "@polar-sh/sdk";
+import type { EventCreateCustomer } from "@polar-sh/sdk/models/components/eventcreatecustomer.js";
 import type {
 	IngestionStrategy,
 	IngestionStrategyCustomer,
@@ -67,6 +68,13 @@ export function Ingestion(polarConfig?: SDKOptions) {
 		) => {
 			strategy.polarClient = new Polar(polarConfig);
 			return strategy;
+		},
+		ingest: async (events: (EventCreateCustomer | EventCreateCustomer)[]) => {
+			const polar = new Polar(polarConfig);
+
+			return polar.events.ingest({
+				events,
+			});
 		},
 	};
 }
