@@ -8,6 +8,8 @@ import type { IngestionContext } from "../../ingestion";
 import {
 	type IngestionExecutionHandler,
 	IngestionStrategy,
+	type IngestionStrategyCustomer,
+	type IngestionStrategyExternalCustomer,
 } from "../../strategy";
 
 type LLMStrategyContext = IngestionContext<{
@@ -29,7 +31,7 @@ export class LLMStrategy extends IngestionStrategy<
 
 	private middleware(
 		execute: IngestionExecutionHandler<LLMStrategyContext>,
-		customerId: string,
+		customer: IngestionStrategyCustomer | IngestionStrategyExternalCustomer,
 	): LanguageModelV1Middleware {
 		const wrapGenerate = async (options: {
 			doGenerate: () => ReturnType<LanguageModelV1["doGenerate"]>;
@@ -38,7 +40,7 @@ export class LLMStrategy extends IngestionStrategy<
 		}): Promise<Awaited<ReturnType<LanguageModelV1["doGenerate"]>>> => {
 			const result = await options.doGenerate();
 
-			await execute(result.usage, customerId);
+			await execute(result.usage, customer);
 
 			return result;
 		};
@@ -58,7 +60,7 @@ export class LLMStrategy extends IngestionStrategy<
 			>({
 				transform: async (chunk, controller) => {
 					if (chunk.type === "finish") {
-						await execute(chunk.usage, customerId);
+						await execute(chunk.usage, customer);
 					}
 
 					controller.enqueue(chunk);
@@ -77,12 +79,14 @@ export class LLMStrategy extends IngestionStrategy<
 		};
 	}
 
-	override client(customerId: string): LanguageModelV1 {
+	override client(
+		customer: IngestionStrategyCustomer | IngestionStrategyExternalCustomer,
+	): LanguageModelV1 {
 		const executionHandler = this.createExecutionHandler();
 
 		return wrapLanguageModel({
 			model: this.model,
-			middleware: this.middleware(executionHandler, customerId),
+			middleware: this.middleware(executionHandler, customer),
 		});
 	}
 }

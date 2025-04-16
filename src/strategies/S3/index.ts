@@ -3,6 +3,8 @@ import type { IngestionContext } from "../../ingestion";
 import {
 	type IngestionExecutionHandler,
 	IngestionStrategy,
+	type IngestionStrategyCustomer,
+	type IngestionStrategyExternalCustomer,
 } from "../../strategy";
 
 type S3StrategyContext = IngestionContext & {
@@ -24,11 +26,11 @@ export class S3Strategy extends IngestionStrategy<S3StrategyContext, S3Client> {
 	private wrapS3Client({
 		s3Client,
 		execute,
-		customerId,
+		customer,
 	}: {
 		s3Client: S3Client;
 		execute: IngestionExecutionHandler<S3StrategyContext>;
-		customerId: string;
+		customer: IngestionStrategyCustomer | IngestionStrategyExternalCustomer;
 	}) {
 		const plugin: Parameters<S3Client["middlewareStack"]["use"]>[0] = {
 			applyToStack: (stack) => {
@@ -56,7 +58,7 @@ export class S3Strategy extends IngestionStrategy<S3StrategyContext, S3Client> {
 								payload.contentType = args.input.ContentType;
 							}
 
-							execute(payload, customerId);
+							execute(payload, customer);
 						}
 
 						return result;
@@ -74,13 +76,15 @@ export class S3Strategy extends IngestionStrategy<S3StrategyContext, S3Client> {
 		return s3Client;
 	}
 
-	public client(customerId: string): S3Client {
+	public client(
+		customer: IngestionStrategyCustomer | IngestionStrategyExternalCustomer,
+	): S3Client {
 		const execute = this.createExecutionHandler();
 
 		return this.wrapS3Client({
 			s3Client: this.s3Client,
 			execute,
-			customerId,
+			customer,
 		});
 	}
 }

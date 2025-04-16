@@ -3,6 +3,8 @@ import type { IngestionContext } from "../../ingestion";
 import {
 	type IngestionExecutionHandler,
 	IngestionStrategy,
+	type IngestionStrategyCustomer,
+	type IngestionStrategyExternalCustomer,
 } from "../../strategy";
 
 type StreamStrategyContext = IngestionContext & {
@@ -24,11 +26,11 @@ export class StreamStrategy<TStream extends Stream> extends IngestionStrategy<
 	private wrapStream({
 		stream,
 		execute,
-		customerId,
+		customer,
 	}: {
 		stream: TStream;
 		execute: IngestionExecutionHandler<StreamStrategyContext>;
-		customerId: string;
+		customer: IngestionStrategyCustomer | IngestionStrategyExternalCustomer;
 	}) {
 		let bytes = 0;
 
@@ -41,19 +43,21 @@ export class StreamStrategy<TStream extends Stream> extends IngestionStrategy<
 				bytes,
 			};
 
-			execute(payload, customerId);
+			execute(payload, customer);
 		});
 
 		return stream;
 	}
 
-	public client(customerId: string): TStream {
+	public client(
+		customer: IngestionStrategyCustomer | IngestionStrategyExternalCustomer,
+	): TStream {
 		const execute = this.createExecutionHandler();
 
 		return this.wrapStream({
 			stream: this.stream as TStream,
 			execute,
-			customerId,
+			customer,
 		});
 	}
 }

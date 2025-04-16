@@ -36,14 +36,18 @@ describe("DeltaTimeStrategy", () => {
 
 	it("client method should return a start function", () => {
 		const customerId = "test-customer-id";
-		const startFn = deltaTimeStrategy.client(customerId);
+		const startFn = deltaTimeStrategy.client({
+			customerId,
+		});
 
 		expect(typeof startFn).toBe("function");
 	});
 
 	it("start function should return a stop function", () => {
 		const customerId = "test-customer-id";
-		const startFn = deltaTimeStrategy.client(customerId);
+		const startFn = deltaTimeStrategy.client({
+			customerId,
+		});
 		const stopFn = startFn();
 
 		expect(typeof stopFn).toBe("function");
@@ -51,7 +55,9 @@ describe("DeltaTimeStrategy", () => {
 
 	it("should calculate correct delta time between start and stop", () => {
 		const customerId = "test-customer-id";
-		const startFn = deltaTimeStrategy.client(customerId);
+		const startFn = deltaTimeStrategy.client({
+			customerId,
+		});
 
 		// First call to nowResolver (start time)
 		const stopFn = startFn();
@@ -72,7 +78,9 @@ describe("DeltaTimeStrategy", () => {
 
 	it("should call execution handler with correct context and customerId", () => {
 		const customerId = "test-customer-id";
-		const startFn = deltaTimeStrategy.client(customerId);
+		const startFn = deltaTimeStrategy.client({
+			customerId,
+		});
 
 		// Start time = 1000
 		const stopFn = startFn();
@@ -87,13 +95,15 @@ describe("DeltaTimeStrategy", () => {
 		expect(mockExecute).toHaveBeenCalledTimes(1);
 		expect(mockExecute).toHaveBeenCalledWith(
 			{ deltaTime: 300 },
-			"test-customer-id",
+			{ customerId },
 		);
 	});
 
 	it("should return the calculated delta time from stop function", () => {
 		const customerId = "test-customer-id";
-		const startFn = deltaTimeStrategy.client(customerId);
+		const startFn = deltaTimeStrategy.client({
+			customerId,
+		});
 
 		// Start time = 1000
 		const stopFn = startFn();

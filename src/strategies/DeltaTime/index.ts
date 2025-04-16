@@ -1,5 +1,9 @@
 import type { IngestionContext } from "../../ingestion";
-import { IngestionStrategy } from "../../strategy";
+import {
+	IngestionStrategy,
+	type IngestionStrategyCustomer,
+	type IngestionStrategyExternalCustomer,
+} from "../../strategy";
 
 type DeltaTimeStrategyContext = IngestionContext & {
 	deltaTime: number;
@@ -24,7 +28,9 @@ export class DeltaTimeStrategy extends IngestionStrategy<
 		this.nowResolver = now;
 	}
 
-	public client(customerId: string): DeltaTimeStrategyStart {
+	public client(
+		customer: IngestionStrategyCustomer | IngestionStrategyExternalCustomer,
+	): DeltaTimeStrategyStart {
 		return () => {
 			const startTime = this.nowResolver();
 
@@ -33,7 +39,7 @@ export class DeltaTimeStrategy extends IngestionStrategy<
 				const deltaTime = endTime - startTime;
 
 				const execute = this.createExecutionHandler();
-				execute({ deltaTime }, customerId);
+				execute({ deltaTime }, customer);
 
 				return deltaTime;
 			};

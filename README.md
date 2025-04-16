@@ -30,7 +30,9 @@ export async function POST(req: Request) {
 
   // Get the wrapped LLM model with ingestion capabilities
   // Pass Customer Id to properly annotate the ingestion events with a specific customer
-  const model = llmIngestion.client(req.headers.get("X-Polar-Customer-Id"));
+  const model = llmIngestion.client({
+    customerId: request.headers.get("X-Polar-Customer-Id") ?? "",
+  });
 
   const { text } = await generateText({
     model,
@@ -73,9 +75,9 @@ export async function POST(request: Request) {
   try {
     // Get the wrapped S3 Client
     // Pass Customer Id to properly annotate the ingestion events with a specific customer
-    const s3 = s3Ingestion.client(
-      request.headers.get("X-Polar-Customer-Id") ?? ""
-    );
+    const s3 = s3Ingestion.client({
+      customerId: request.headers.get("X-Polar-Customer-Id") ?? "",
+    });
 
     await s3.send(
       new PutObjectCommand({
@@ -120,9 +122,9 @@ export async function GET(request: Request) {
 
     // Get the wrapped stream
     // Pass Customer Id to properly annotate the ingestion events with a specific customer
-    const stream = streamIngestion.client(
-      request.headers.get("X-Polar-Customer-Id") ?? ""
-    );
+    const stream = streamIngestion.client({
+      customerId: request.headers.get("X-Polar-Customer-Id") ?? ""
+    });
 
     // Consume stream...
     stream.on('data', () => ...)
@@ -147,7 +149,7 @@ import { Ingestion } from "@polar-sh/ingestion";
 import { DeltaTimeStrategy } from "@polar-sh/ingestion/strategies/DeltaTime";
 
 const nowResolver = () => performance.now();
-// const nowResolver = () => hrtime.bigint()
+// const nowResolver = () => Number(hrtime.bigint())
 // const nowResolver = () => Date.now()
 
 // Setup the Delta Time Ingestion Strategy
@@ -161,9 +163,9 @@ export async function GET(request: Request) {
   try {
     // Get the wrapped start clock function
     // Pass Customer Id to properly annotate the ingestion events with a specific customer
-    const start = deltaTimeIngestion.client(
-      request.headers.get("X-Polar-Customer-Id") ?? ""
-    );
+    const start = deltaTimeIngestion.client({
+      customerId: request.headers.get("X-Polar-Customer-Id") ?? "",
+    });
 
     const stop = start();
 

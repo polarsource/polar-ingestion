@@ -1,5 +1,9 @@
 import { Polar, type SDKOptions } from "@polar-sh/sdk";
-import type { IngestionStrategy } from "./strategy";
+import type {
+	IngestionStrategy,
+	IngestionStrategyCustomer,
+	IngestionStrategyExternalCustomer,
+} from "./strategy";
 
 export type IngestionContext<
 	TContext extends Record<string, string | number | boolean> = Record<
@@ -10,7 +14,7 @@ export type IngestionContext<
 
 type Transformer<TContext extends IngestionContext> = (
 	ctx: TContext,
-	customerId: string,
+	customer: IngestionStrategyCustomer | IngestionStrategyExternalCustomer,
 ) => Promise<void>;
 
 export class PolarIngestion<TContext extends IngestionContext> {
@@ -23,9 +27,12 @@ export class PolarIngestion<TContext extends IngestionContext> {
 		return this;
 	}
 
-	public async execute(ctx: TContext, customerId: string) {
+	public async execute(
+		ctx: TContext,
+		customer: IngestionStrategyCustomer | IngestionStrategyExternalCustomer,
+	) {
 		await Promise.all(
-			this.transformers.map((transformer) => transformer(ctx, customerId)),
+			this.transformers.map((transformer) => transformer(ctx, customer)),
 		);
 	}
 
@@ -35,7 +42,7 @@ export class PolarIngestion<TContext extends IngestionContext> {
 			ctx: TContext,
 		) => Record<string, number | string | boolean>,
 	) {
-		return this.pipe(async (ctx, customerId) => {
+		return this.pipe(async (ctx, customer) => {
 			if (!this.polarClient) {
 				throw new Error("Polar client not initialized");
 			}
@@ -43,7 +50,7 @@ export class PolarIngestion<TContext extends IngestionContext> {
 			await this.polarClient.events.ingest({
 				events: [
 					{
-						customerId,
+						...customer,
 						name: meter,
 						metadata: metadataResolver ? metadataResolver(ctx) : ctx,
 					},
