@@ -1,44 +1,48 @@
 import { type IngestionContext, PolarIngestion } from "./ingestion";
 
 export type IngestionStrategyCustomer = {
-	customerId: string;
+  customerId: string;
 };
 
 export type IngestionStrategyExternalCustomer = {
-	externalCustomerId: string;
+  externalCustomerId: string;
 };
 
 export type IngestionExecutionHandler<TUsageContext extends IngestionContext> =
-	(
-		ctx: TUsageContext,
-		customer: IngestionStrategyCustomer | IngestionStrategyExternalCustomer,
-	) => Promise<void>;
+  (
+    ctx: TUsageContext,
+    customer: IngestionStrategyCustomer | IngestionStrategyExternalCustomer
+  ) => Promise<void>;
+
+export type IngestionStrategyContext = IngestionContext & {
+  strategy: "S3" | "LLM" | "DeltaTime" | "Stream" | (string & {});
+};
 
 export abstract class IngestionStrategy<
-	TUsageContext extends IngestionContext,
-	TStrategyClient,
+  TUsageContext extends IngestionStrategyContext,
+  TStrategyClient
 > extends PolarIngestion<TUsageContext> {
-	public createExecutionHandler(): IngestionExecutionHandler<TUsageContext> {
-		return async (
-			context: TUsageContext,
-			customer: IngestionStrategyCustomer | IngestionStrategyExternalCustomer,
-		) => {
-			await this.execute(context, customer);
-		};
-	}
+  public createExecutionHandler(): IngestionExecutionHandler<TUsageContext> {
+    return async (
+      context: TUsageContext,
+      customer: IngestionStrategyCustomer | IngestionStrategyExternalCustomer
+    ) => {
+      await this.execute(context, customer);
+    };
+  }
 
-	public ingest(
-		eventName: string,
-		metadataResolver?: (
-			ctx: TUsageContext,
-		) => Record<string, number | string | boolean>,
-	) {
-		this.schedule(eventName, metadataResolver);
+  public ingest(
+    eventName: string,
+    metadataResolver?: (
+      ctx: TUsageContext
+    ) => Record<string, number | string | boolean>
+  ) {
+    this.schedule(eventName, metadataResolver);
 
-		return this;
-	}
+    return this;
+  }
 
-	public abstract client(
-		customer: IngestionStrategyCustomer | IngestionStrategyExternalCustomer,
-	): TStrategyClient;
+  public abstract client(
+    customer: IngestionStrategyCustomer | IngestionStrategyExternalCustomer
+  ): TStrategyClient;
 }

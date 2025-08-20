@@ -1,63 +1,65 @@
 import type { Stream } from "node:stream";
-import type { IngestionContext } from "../../ingestion";
 import {
-	type IngestionExecutionHandler,
-	IngestionStrategy,
-	type IngestionStrategyCustomer,
-	type IngestionStrategyExternalCustomer,
+  type IngestionExecutionHandler,
+  IngestionStrategy,
+  type IngestionStrategyContext,
+  type IngestionStrategyCustomer,
+  type IngestionStrategyExternalCustomer,
 } from "../../strategy";
 
-type StreamStrategyContext = IngestionContext & {
-	bytes: number;
+type StreamStrategyContext = IngestionStrategyContext & {
+  bytes: number;
+  strategy: "Stream";
 };
 
 export class StreamStrategy<TStream extends Stream> extends IngestionStrategy<
-	StreamStrategyContext,
-	TStream
+  StreamStrategyContext,
+  TStream
 > {
-	private stream: Stream;
+  private stream: Stream;
 
-	constructor(stream: Stream) {
-		super();
+  constructor(stream: Stream) {
+    super();
 
-		this.stream = stream;
-	}
+    this.stream = stream;
+  }
 
-	private wrapStream({
-		stream,
-		execute,
-		customer,
-	}: {
-		stream: TStream;
-		execute: IngestionExecutionHandler<StreamStrategyContext>;
-		customer: IngestionStrategyCustomer | IngestionStrategyExternalCustomer;
-	}) {
-		let bytes = 0;
+  private wrapStream({
+    stream,
+    execute,
+    customer,
+  }: {
+    stream: TStream;
+    execute: IngestionExecutionHandler<StreamStrategyContext>;
+    customer: IngestionStrategyCustomer | IngestionStrategyExternalCustomer;
+  }) {
+    let bytes = 0;
 
-		stream.on("data", (chunk) => {
-			bytes += chunk.length;
-		});
+    stream.on("data", (chunk) => {
+      bytes += chunk.length;
+    });
 
-		stream.on("end", () => {
-			const payload: StreamStrategyContext = {
-				bytes,
-			};
+    stream.on("end", () => {
+      const payload: StreamStrategyContext = {
+        bytes,
+        strategy: "Stream",
+      };
 
-			execute(payload, customer);
-		});
+      execute(payload, customer);
+    });
 
-		return stream;
-	}
+    return stream;
+  }
 
-	public client(
-		customer: IngestionStrategyCustomer | IngestionStrategyExternalCustomer,
-	): TStream {
-		const execute = this.createExecutionHandler();
+  public client(
+    customer: IngestionStrategyCustomer | IngestionStrategyExternalCustomer
+  ): TStream {
+    const execute = this.createExecutionHandler();
 
-		return this.wrapStream({
-			stream: this.stream as TStream,
-			execute,
-			customer,
-		});
-	}
+    return this.wrapStream({
+      stream: this.stream as TStream,
+      execute,
+      customer,
+    });
+  }
 }

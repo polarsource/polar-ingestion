@@ -18,6 +18,7 @@ type LLMStrategyContext = IngestionContext<{
   totalTokens: number;
   provider: LanguageModelV2["provider"];
   model: LanguageModelV2["modelId"];
+  strategy: "LLM";
 }>;
 
 export class LLMStrategy extends IngestionStrategy<
@@ -50,6 +51,7 @@ export class LLMStrategy extends IngestionStrategy<
           totalTokens: result.usage.totalTokens ?? 0,
           provider: this.model.provider,
           model: this.model.modelId,
+          strategy: "LLM",
         },
         customer
       );
@@ -79,6 +81,7 @@ export class LLMStrategy extends IngestionStrategy<
                 totalTokens: chunk.usage.totalTokens ?? 0,
                 provider: this.model.provider,
                 model: this.model.modelId,
+                strategy: "LLM",
               },
               customer
             );

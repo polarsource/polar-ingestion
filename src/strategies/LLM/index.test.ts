@@ -69,6 +69,7 @@ describe("LLMStrategy", () => {
         totalTokens: 2,
         provider: "test-provider",
         model: "test-model",
+        strategy: "LLM",
       },
       {
         customerId,
