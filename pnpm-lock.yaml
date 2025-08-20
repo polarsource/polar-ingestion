@@ -9,8 +9,8 @@ importers:
   .:
     dependencies:
       '@polar-sh/sdk':
-        specifier: ^0.32.13
-        version: 0.32.16(zod@3.25.76)
+        specifier: ^0.34.12
+        version: 0.34.12
     devDependencies:
       '@ai-sdk/provider':
         specifier: ^2.0.0
@@ -443,12 +443,11 @@ packages:
     resolution: {integrity: sha512-+1VkjdD0QBLPodGrJUeqarH8VAIvQODIbwh9XpP5Syisf7YoQgsJKPNFoqqLQlu+VQ/tVSshMR6loPMn8U+dPg==}
     engines: {node: '>=14'}
 
-  '@polar-sh/sdk@0.32.16':
-    resolution: {integrity: sha512-s+FvSJieNv9KcXGFNSbVzXpTY/hW8oYk8soa3Ow7NgWw/dY+pJ1py+qv+hNwxIuEmlHlpBIBHJVYQqPI9lLzCA==}
+  '@polar-sh/sdk@0.34.12':
+    resolution: {integrity: sha512-zBPTV5p7sz79XaXOqWt2CMY6mNMM7P8kRaT/YdgUkWoJ2lVHxGFQzla+Zykk85t2VDTFABgum3hXSacL0bhvDg==}
     hasBin: true
     peerDependencies:
       '@modelcontextprotocol/sdk': '>=1.5.0 <1.10.0'
-      zod: '>= 3'
     peerDependenciesMeta:
       '@modelcontextprotocol/sdk':
         optional: true
@@ -1986,7 +1985,7 @@ snapshots:
   '@pkgjs/parseargs@0.11.0':
     optional: true
 
-  '@polar-sh/sdk@0.32.16(zod@3.25.76)':
+  '@polar-sh/sdk@0.34.12':
     dependencies:
       standardwebhooks: 1.0.0
       zod: 3.25.76
