@@ -1,113 +1,113 @@
 import type {
-	LanguageModelV1,
-	LanguageModelV1CallOptions,
-	LanguageModelV1StreamPart,
+  LanguageModelV2,
+  LanguageModelV2CallOptions,
+  LanguageModelV2StreamPart,
 } from "@ai-sdk/provider";
-import { type LanguageModelV1Middleware, wrapLanguageModel } from "ai";
+import { type LanguageModelMiddleware, wrapLanguageModel } from "ai";
 import type { IngestionContext } from "../../ingestion";
 import {
-	type IngestionExecutionHandler,
-	IngestionStrategy,
-	type IngestionStrategyCustomer,
-	type IngestionStrategyExternalCustomer,
+  type IngestionExecutionHandler,
+  IngestionStrategy,
+  type IngestionStrategyCustomer,
+  type IngestionStrategyExternalCustomer,
 } from "../../strategy";
 
 type LLMStrategyContext = IngestionContext<{
-	promptTokens: number;
-	completionTokens: number;
-	totalTokens: number;
-	provider: LanguageModelV1["provider"];
-	model: LanguageModelV1["modelId"];
+  promptTokens: number;
+  completionTokens: number;
+  totalTokens: number;
+  provider: LanguageModelV2["provider"];
+  model: LanguageModelV2["modelId"];
 }>;
 
 export class LLMStrategy extends IngestionStrategy<
-	LLMStrategyContext,
-	LanguageModelV1
+  LLMStrategyContext,
+  LanguageModelV2
 > {
-	private model: LanguageModelV1;
+  private model: LanguageModelV2;
 
-	constructor(model: LanguageModelV1) {
-		super();
+  constructor(model: LanguageModelV2) {
+    super();
 
-		this.model = model;
-	}
+    this.model = model;
+  }
 
-	private middleware(
-		execute: IngestionExecutionHandler<LLMStrategyContext>,
-		customer: IngestionStrategyCustomer | IngestionStrategyExternalCustomer,
-	): LanguageModelV1Middleware {
-		const wrapGenerate = async (options: {
-			doGenerate: () => ReturnType<LanguageModelV1["doGenerate"]>;
-			params: LanguageModelV1CallOptions;
-			model: LanguageModelV1;
-		}): Promise<Awaited<ReturnType<LanguageModelV1["doGenerate"]>>> => {
-			const result = await options.doGenerate();
+  private middleware(
+    execute: IngestionExecutionHandler<LLMStrategyContext>,
+    customer: IngestionStrategyCustomer | IngestionStrategyExternalCustomer
+  ): LanguageModelMiddleware {
+    const wrapGenerate = async (options: {
+      doGenerate: () => ReturnType<LanguageModelV2["doGenerate"]>;
+      params: LanguageModelV2CallOptions;
+      model: LanguageModelV2;
+    }): Promise<Awaited<ReturnType<LanguageModelV2["doGenerate"]>>> => {
+      const result = await options.doGenerate();
 
-			await execute(
-				{
-					...result.usage,
-					totalTokens:
-						result.usage.promptTokens + result.usage.completionTokens,
-					provider: this.model.provider,
-					model: this.model.modelId,
-				},
-				customer,
-			);
+      await execute(
+        {
+          promptTokens: result.usage.inputTokens ?? 0,
+          completionTokens: result.usage.outputTokens ?? 0,
+          totalTokens: result.usage.totalTokens ?? 0,
+          provider: this.model.provider,
+          model: this.model.modelId,
+        },
+        customer
+      );
 
-			return result;
-		};
+      return result;
+    };
 
-		const wrapStream = async ({
-			doStream,
-		}: {
-			doStream: () => ReturnType<LanguageModelV1["doStream"]>;
-			params: LanguageModelV1CallOptions;
-			model: LanguageModelV1;
-		}) => {
-			const { stream, ...rest } = await doStream();
+    const wrapStream = async ({
+      doStream,
+    }: {
+      doStream: () => ReturnType<LanguageModelV2["doStream"]>;
+      params: LanguageModelV2CallOptions;
+      model: LanguageModelV2;
+    }) => {
+      const { stream, ...rest } = await doStream();
 
-			const transformStream = new TransformStream<
-				LanguageModelV1StreamPart,
-				LanguageModelV1StreamPart
-			>({
-				transform: async (chunk, controller) => {
-					if (chunk.type === "finish") {
-						await execute(
-							{
-								...chunk.usage,
-								totalTokens:
-									chunk.usage.promptTokens + chunk.usage.completionTokens,
-								provider: this.model.provider,
-								model: this.model.modelId,
-							},
-							customer,
-						);
-					}
+      const transformStream = new TransformStream<
+        LanguageModelV2StreamPart,
+        LanguageModelV2StreamPart
+      >({
+        transform: async (chunk, controller) => {
+          if (chunk.type === "finish") {
+            await execute(
+              {
+                promptTokens: chunk.usage.inputTokens ?? 0,
+                completionTokens: chunk.usage.outputTokens ?? 0,
+                totalTokens: chunk.usage.totalTokens ?? 0,
+                provider: this.model.provider,
+                model: this.model.modelId,
+              },
+              customer
+            );
+          }
 
-					controller.enqueue(chunk);
-				},
-			});
+          controller.enqueue(chunk);
+        },
+      });
 
-			return {
-				stream: stream.pipeThrough(transformStream),
-				...rest,
-			};
-		};
+      return {
+        stream: stream.pipeThrough(transformStream),
+        ...rest,
+      };
+    };
 
-		return {
-			wrapGenerate,
-			wrapStream,
-		};
-	}
+    return {
+      wrapGenerate,
+      wrapStream,
+    };
+  }
 
-	override client(
-		customer: IngestionStrategyCustomer | IngestionStrategyExternalCustomer,
-	): LanguageModelV1 {
-		const executionHandler = this.createExecutionHandler();
+  override client(
+    customer: IngestionStrategyCustomer | IngestionStrategyExternalCustomer
+  ): LanguageModelV2 {
+    const executionHandler = this.createExecutionHandler();
 
-		return wrapLanguageModel({
-			model: this.model,
-			middleware: this.middleware(executionHandler, customer),
-		});
-	}
+    return wrapLanguageModel({
+      model: this.model,
+      middleware: this.middleware(executionHandler, customer),
+    });
+  }
 }
