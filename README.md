@@ -112,7 +112,11 @@ export async function POST(req: Request) {
   "name": "openai-usage",
   "metadata": {
     "promptTokens": 100,
-    "completionTokens": 200
+    "completionTokens": 200,
+    "totalTokens": 300,
+    "model": "gpt-4o",
+    "provider": "openai.responses",
+    "strategy": "LLM"
   }
 }
 ```
@@ -181,7 +185,8 @@ export async function POST(request: Request) {
     "bytes": 100,
     "bucket": "my-bucket",
     "key": "my-key",
-    "contentType": "application/text"
+    "contentType": "application/text",
+    "strategy": "S3"
   }
 }
 ```
@@ -231,7 +236,8 @@ export async function GET(request: Request) {
   "customerId": "123",
   "name": "my-stream",
   "metadata": {
-    "bytes": 100
+    "bytes": 100,
+    "strategy": "Stream"
   }
 }
 ```
@@ -288,7 +294,8 @@ export async function GET(request: Request) {
   "customerId": "123",
   "name": "execution-time",
   "metadata": {
-    "deltaTime": 1000
+    "deltaTime": 1000,
+    "strategy": "DeltaTime"
   }
 }
 ```
