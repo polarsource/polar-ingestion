@@ -6,6 +6,7 @@ import type {
   IngestionStrategyCustomer,
   IngestionStrategyExternalCustomer,
 } from "./strategy";
+import type { EventCreateExternalCustomer } from "@polar-sh/sdk/models/components/eventcreateexternalcustomer.js";
 
 export type IngestionContext<
   TContext extends Record<string, string | number | boolean> = Record<
@@ -22,11 +23,28 @@ type Transformer<TContext extends IngestionContext> = (
 export class PolarIngestion<TContext extends IngestionContext> {
   public polarClient?: Polar;
   private transformers: Transformer<TContext>[] = [];
+  private eventBatch: (EventCreateCustomer | EventCreateExternalCustomer)[] =
+    [];
+  private batchTimer?: NodeJS.Timeout;
+  private readonly batchTimeout = 500;
 
   private pipe(transformer: Transformer<TContext>) {
     this.transformers.push(transformer);
 
     return this;
+  }
+
+  private async flushBatch() {
+    if (this.eventBatch.length === 0) return;
+
+    const eventsToSend = [...this.eventBatch];
+    this.eventBatch = [];
+
+    if (this.polarClient) {
+      await this.polarClient.events.ingest({
+        events: eventsToSend,
+      });
+    }
   }
 
   public async execute(
@@ -49,15 +67,22 @@ export class PolarIngestion<TContext extends IngestionContext> {
         throw new Error("Polar client not initialized");
       }
 
-      await this.polarClient.events.ingest({
-        events: [
-          {
-            ...customer,
-            name: meter,
-            metadata: metadataResolver ? metadataResolver(ctx) : ctx,
-          },
-        ],
-      });
+      const event = {
+        ...customer,
+        name: meter,
+        metadata: metadataResolver ? metadataResolver(ctx) : ctx,
+      };
+
+      this.eventBatch.push(event);
+
+      if (this.batchTimer) {
+        clearTimeout(this.batchTimer);
+      }
+
+      this.batchTimer = setTimeout(() => {
+        this.flushBatch();
+        this.batchTimer = undefined;
+      }, this.batchTimeout);
     });
   }
 }
