@@ -20,16 +20,24 @@ vi.mock("@polar-sh/sdk", async (importOriginal) => {
 import { Ingestion } from "../../ingestion";
 
 const mockLLMClient = {
-  specificationVersion: "v2",
+  specificationVersion: "v3",
   provider: "test-provider",
   modelId: "test-model",
   defaultObjectGenerationMode: "json",
   supportedUrls: {},
   doGenerate: vi.fn().mockResolvedValue({
     usage: {
-      inputTokens: 1,
-      outputTokens: 1,
-      totalTokens: 2,
+      inputTokens: {
+        total: 1,
+        noCache: 1,
+        cacheRead: 0,
+        cacheWrite: 0,
+      },
+      outputTokens: {
+        total: 1,
+        text: 1,
+        reasoning: 0,
+      },
       model: "test-model",
       vendor: "test-provider",
     },
