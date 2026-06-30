@@ -113,16 +113,12 @@ describe("polarTanStackAIMiddleware", () => {
 		});
 	});
 
-	it("supports customer and cost resolvers", async () => {
+	it("supports customer resolvers", async () => {
 		mockEventsIngest.mockResolvedValueOnce({});
 		const middleware = polarTanStackAIMiddleware<TestContext>({
 			eventName: "tanstack-ai-usage",
 			customer: (middlewareCtx) => ({
 				customerId: middlewareCtx.context.customerId,
-			}),
-			cost: (metadata) => ({
-				amount: metadata.totalTokens * 100,
-				currency: "USD",
 			}),
 		});
 		const request = ctx("req-1", { customerId: "dynamic-customer" });
@@ -136,18 +132,12 @@ describe("polarTanStackAIMiddleware", () => {
 			events: [
 				expect.objectContaining({
 					customerId: "dynamic-customer",
-					metadata: expect.objectContaining({
-						_cost: {
-							amount: 300,
-							currency: "USD",
-						},
-					}),
 				}),
 			],
 		});
 	});
 
-	it("passes through provider-reported cost", async () => {
+	it("maps provider-reported cost to Polar cost metadata", async () => {
 		mockEventsIngest.mockResolvedValueOnce({});
 		const middleware = polarTanStackAIMiddleware<TestContext>({
 			eventName: "tanstack-ai-usage",
@@ -172,7 +162,44 @@ describe("polarTanStackAIMiddleware", () => {
 			events: [
 				expect.objectContaining({
 					metadata: expect.objectContaining({
-						providerCost: 0.0012,
+						_cost: {
+							amount: "0.12",
+							currency: "USD",
+						},
+					}),
+				}),
+			],
+		});
+	});
+
+	it("lets callers override cost metadata", async () => {
+		mockEventsIngest.mockResolvedValueOnce({});
+		const middleware = polarTanStackAIMiddleware<TestContext>({
+			eventName: "tanstack-ai-usage",
+			customer: { customerId: "customer-id" },
+			cost: (metadata) => ({
+				amount: metadata.totalTokens * 100,
+				currency: "USD",
+			}),
+		});
+		const request = ctx("req-1");
+
+		middleware.onUsage?.(request.context, {
+			...usage(1, 2, 3),
+			cost: 0.0012,
+		});
+		middleware.onFinish?.(request.context, finishInfo);
+
+		await Promise.all(request.deferred);
+
+		expect(mockEventsIngest).toHaveBeenCalledWith({
+			events: [
+				expect.objectContaining({
+					metadata: expect.objectContaining({
+						_cost: {
+							amount: 300,
+							currency: "USD",
+						},
 					}),
 				}),
 			],

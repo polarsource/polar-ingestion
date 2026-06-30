@@ -189,7 +189,6 @@ const polarUsage = polarTanStackAIMiddleware<{ customerId: string }>({
   polar: { accessToken: process.env.POLAR_ACCESS_TOKEN },
   eventName: "tanstack-ai-usage",
   customer: (ctx) => ({ customerId: ctx.context.customerId }),
-  cost: (ctx) => ({ amount: ctx.totalTokens * 100, currency: "USD" }),
 });
 
 export async function POST(req: Request) {
@@ -206,7 +205,7 @@ export async function POST(req: Request) {
 }
 ```
 
-The middleware emits one Polar event on `onFinish`, after aggregating every TanStack `onUsage` callback for the request. It maps TanStack `provider` and `model` to Polar LLM metadata by default; pass `vendor` or `model` to override them. Provider-reported costs, such as OpenRouter `usage.cost`, are included as `providerCost` and can be converted to Polar `_cost` in the optional `cost` callback. Polar ingestion is deferred, so a Polar outage does not fail a successful chat response.
+The middleware emits one Polar event on `onFinish`, after aggregating every TanStack `onUsage` callback for the request. It maps TanStack `provider` and `model` to Polar LLM metadata by default; pass `vendor` or `model` to override them. Provider-reported costs, such as OpenRouter `usage.cost`, are passed through as Polar `_cost` automatically; pass `cost` only when you need to override that. Polar ingestion is deferred, so a Polar outage does not fail a successful chat response.
 
 ### S3 Strategy
 

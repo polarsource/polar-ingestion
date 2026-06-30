@@ -16,7 +16,6 @@ export type TanStackAIUsageContext = {
 	outputTokens: number;
 	cachedInputTokens: number;
 	totalTokens: number;
-	providerCost?: number;
 	vendor: string;
 	model: string;
 	strategy: "LLM";
@@ -25,13 +24,16 @@ export type TanStackAIUsageContext = {
 };
 
 type Customer = IngestionStrategyCustomer | IngestionStrategyExternalCustomer;
+type TanStackAICostContext = TanStackAIUsageContext & {
+	providerCost?: number;
+};
 
 export type TanStackAICustomerResolver<TContext = unknown> = (
 	ctx: ChatMiddlewareContext<TContext>,
 ) => Customer;
 
 export type TanStackAICostResolver = (
-	ctx: TanStackAIUsageContext,
+	ctx: TanStackAICostContext,
 ) => CostMetadataInput;
 
 export type TanStackAIMiddlewareOptions<TContext = unknown> = {
@@ -45,12 +47,10 @@ export type TanStackAIMiddlewareOptions<TContext = unknown> = {
 
 type Totals = Pick<
 	TanStackAIUsageContext,
-	| "inputTokens"
-	| "outputTokens"
-	| "cachedInputTokens"
-	| "totalTokens"
-	| "providerCost"
->;
+	"inputTokens" | "outputTokens" | "cachedInputTokens" | "totalTokens"
+> & {
+	providerCost?: number;
+};
 
 const emptyTotals = (): Totals => ({
 	inputTokens: 0,
@@ -113,8 +113,9 @@ export function polarTanStackAIMiddleware<TContext = unknown>(
 
 			const vendor = options.vendor ?? ctx.provider;
 			const model = options.model ?? ctx.model;
+			const { providerCost, ...usageMetadata } = totals;
 			const metadata: TanStackAIUsageContext = {
-				...totals,
+				...usageMetadata,
 				vendor,
 				model,
 				strategy: "LLM",
@@ -128,8 +129,15 @@ export function polarTanStackAIMiddleware<TContext = unknown>(
 				},
 			};
 
+			if (providerCost !== undefined) {
+				metadata._cost = {
+					amount: String(providerCost * 100),
+					currency: "USD",
+				};
+			}
+
 			if (options.cost) {
-				metadata._cost = options.cost(metadata);
+				metadata._cost = options.cost({ ...metadata, providerCost });
 			}
 
 			const ingestion = polar.events
