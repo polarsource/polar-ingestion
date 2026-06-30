@@ -170,6 +170,43 @@ export async function POST(req: Request) {
 }
 ```
 
+### TanStack AI Middleware
+
+Use TanStack AI middleware when you want usage ingestion to work across TanStack adapters such as OpenAI, Anthropic, OpenRouter, Groq, or any adapter that reports TanStack token usage.
+
+```
+pnpm add @polar-sh/ingestion @tanstack/ai @tanstack/ai-openrouter
+```
+
+```typescript
+import { chat, toServerSentEventsResponse } from "@tanstack/ai";
+import { openRouterText } from "@tanstack/ai-openrouter";
+import { polarTanStackAIMiddleware } from "@polar-sh/ingestion/tanstack-ai";
+
+const adapter = openRouterText("openai/gpt-5");
+
+const polarUsage = polarTanStackAIMiddleware<{ customerId: string }>({
+  polar: { accessToken: process.env.POLAR_ACCESS_TOKEN },
+  eventName: "tanstack-ai-usage",
+  customer: (ctx) => ({ customerId: ctx.context.customerId }),
+});
+
+export async function POST(req: Request) {
+  const { messages, customerId } = await req.json();
+
+  const stream = chat({
+    adapter,
+    messages,
+    context: { customerId },
+    middleware: [polarUsage],
+  });
+
+  return toServerSentEventsResponse(stream);
+}
+```
+
+The middleware emits one Polar event on `onFinish`, after aggregating every TanStack `onUsage` callback for the request. It maps TanStack `provider` and `model` to Polar LLM metadata by default; pass `vendor` or `model` to override them. Provider-reported costs, such as OpenRouter `usage.cost`, are passed through as Polar `_cost` automatically; pass `cost` only when you need to override that. Polar ingestion is deferred, so a Polar outage does not fail a successful chat response.
+
 ### S3 Strategy
 
 Wrap the official AWS S3 Client with our S3 Ingestion Strategy to automatically ingest bytes uploaded.
