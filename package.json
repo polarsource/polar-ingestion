@@ -69,6 +69,16 @@
         "types": "./dist/opentelemetry/index.d.cts",
         "require": "./dist/opentelemetry/index.cjs"
       }
+    },
+    "./tanstack-ai": {
+      "import": {
+        "types": "./dist/tanstack-ai/index.d.ts",
+        "import": "./dist/tanstack-ai/index.js"
+      },
+      "require": {
+        "types": "./dist/tanstack-ai/index.d.cts",
+        "require": "./dist/tanstack-ai/index.cjs"
+      }
     }
   },
   "scripts": {
@@ -90,7 +100,13 @@
   },
   "peerDependencies": {
     "@aws-sdk/client-s3": "^3.744.0",
+    "@tanstack/ai": "^0.38.0",
     "ai": "^5.0.18"
+  },
+  "peerDependenciesMeta": {
+    "@tanstack/ai": {
+      "optional": true
+    }
   },
   "devDependencies": {
     "@ai-sdk/provider": "^2.0.0",
@@ -99,6 +115,7 @@
     "@opentelemetry/api": "^1.9.0",
     "@opentelemetry/sdk-trace-node": "^2.2.0",
     "@sindresorhus/tsconfig": "^7.0.0",
+    "@tanstack/ai": "^0.38.0",
     "@types/node": "^22.15.3",
     "ai": "^5.0.18",
     "tsup": "^8.4.0",
